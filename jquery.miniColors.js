@@ -221,13 +221,29 @@ if(jQuery) (function($) {
 				//
 				// Hides one or more miniColors selectors
 				//
+
+				var hidingActiveSelector = !!input;
 				
 				// Hide all other instances if input isn't specified
 				if( !input ) input = '.miniColors';
 				
 				$(input).each( function() {
+					// firing change event
+					if ( hidingActiveSelector ) {
+						var inp = $(this),
+							hsb = inp.data('hsb'),
+							hex = hsb2hex(hsb);
+						if ( inp.data('change') ) {
+							if( hex !== inp.data('lastChange') ) {
+								inp.data('change').call(this, '#' + hex, hsb2rgb(hsb));
+								inp.data('lastChange', hex);								
+							}
+						}						
+					}					
+
 					var selector = $(this).data('selector');
-					$(this).removeData('selector');
+					$(this).removeData('selector');					
+
 					$(selector).fadeOut(100, function() {
 						$(this).remove();
 					});
@@ -323,14 +339,6 @@ if(jQuery) (function($) {
 				if( updateInput ) input.val( '#' + convertCase(hex, input.data('letterCase')) );
 				input.data('trigger').css('backgroundColor', '#' + hex);
 				if( input.data('selector') ) input.data('selector').find('.miniColors-colors').css('backgroundColor', '#' + hsb2hex({ h: hsb.h, s: 100, b: 100 }));
-				
-				// Fire change callback
-				if( input.data('change') ) {
-					if( hex === input.data('lastChange') ) return;
-					input.data('change').call(input.get(0), '#' + hex, hsb2rgb(hsb));
-					input.data('lastChange', hex);
-				}
-				
 			};
 			
 			var setColorFromInput = function(input) {
